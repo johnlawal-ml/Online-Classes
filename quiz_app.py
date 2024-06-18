@@ -25,6 +25,12 @@ def load_existing_data():
     else:
         return pd.DataFrame(columns=["Name", "Student ID", "Score"])
 
+# Function to format time
+def format_time(seconds):
+    minutes = seconds // 60
+    seconds = seconds % 60
+    return f"{int(minutes)}:{int(seconds):02d}"
+
 # Display the logo at the top
 st.image("logo.png", width=100)  # Adjust width as needed
 
@@ -77,7 +83,17 @@ else:
         st.warning("Time is up! Submitting your answers...")
         submit_quiz = True
     else:
-        st.sidebar.write(f"Time remaining: {int(remaining_time // 60)} minutes {int(remaining_time % 60)} seconds")
+        # Display the countdown timer
+        timer_placeholder = st.empty()
+        with timer_placeholder.container():
+            st.markdown(
+                f"""
+                <div style="position: fixed; top: 10px; right: 10px; font-size: 24px; background-color: white; padding: 10px; border: 1px solid black; border-radius: 10px;">
+                    Time remaining: {format_time(remaining_time)}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         submit_quiz = False
 
     # Display the current question
