@@ -77,20 +77,22 @@ elif student_name and student_email:
     if st.session_state.start_time is None:
         st.session_state.start_time = time.time()
 
-    elapsed_time = time.time() - st.session_state.start_time
-    remaining_time = total_time - elapsed_time
+    while True:
+        elapsed_time = time.time() - st.session_state.start_time
+        remaining_time = total_time - elapsed_time
 
-    if remaining_time <= 0:
-        st.session_state.submitted = True
-        remaining_time = 0
-    else:
-        # Display the countdown timer
-        st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**")
+        if remaining_time <= 0:
+            st.session_state.submitted = True
+            remaining_time = 0
+        else:
+            # Display the countdown timer
+            st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**", unsafe_allow_html=True)
 
         # Display current question and options
         current_question = st.session_state.current_question
         question = questions[current_question]
         st.markdown(f"**Question {current_question + 1}:** {question['question']}")
+
         st.session_state.student_responses[current_question] = st.radio(
             f"Select your answer for Question {current_question + 1}:", question["options"], key=current_question
         )
@@ -132,12 +134,14 @@ elif student_name and student_email:
                     elif correct_answers >= total_questions / 2:
                         st.info("Good job! You got more than half of the questions right.")
                     else:
-                        st.warning("You need more practice. Better luck next time!")
+st.warning("You need more practice. Better luck next time!")
 
                     st.sidebar.success("Details submitted successfully!")
 
                     # End the quiz
                     st.error("Time's up! Your quiz has been automatically submitted.")
+
+        time.sleep(1)  # Wait for 1 second before updating the timer again
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
