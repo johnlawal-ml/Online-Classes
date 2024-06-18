@@ -61,10 +61,10 @@ admin_emails = []  # Empty list means no admin access
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
-if 'student_responses' not in st.session_state:
-    st.session_state.student_responses = {}
 if 'current_question' not in st.session_state:
     st.session_state.current_question = 0
+if 'student_responses' not in st.session_state:
+    st.session_state.student_responses = {}
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
@@ -85,22 +85,7 @@ elif student_name and student_email:
         remaining_time = 0
     else:
         # Display the countdown timer
-        timer_placeholder = st.sidebar.empty()
-
-        while remaining_time > 0 and not st.session_state.submitted:
-            minutes = remaining_time // 60
-            seconds = remaining_time % 60
-            timer_placeholder.markdown(f"Time remaining: **{int(minutes)}:{int(seconds):02d}**")
-            time.sleep(1)
-            elapsed_time = time.time() - st.session_state.start_time
-            remaining_time = total_time - elapsed_time
-
-        if not st.session_state.submitted:
-            st.session_state.submitted = True
-            st.error("Time's up! Your quiz has been automatically submitted.")
-
-            # Ensure the final timer display shows 00:00
-            timer_placeholder.markdown(f"Time remaining: **00:00**")
+        st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**")
 
         # Display current question and options
         current_question = st.session_state.current_question
