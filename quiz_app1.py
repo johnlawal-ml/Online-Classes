@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import time
 
-# Define the questions and choices (using a reduced set of questions for clarity)
+# Define the questions and choices
 questions = [
     {
         "question": "Which of the following is the correct formula to add cells A1 and B1 in Excel?",
@@ -59,13 +59,13 @@ student_email = st.sidebar.text_input("Email")
 admin_emails = []  # Empty list means no admin access
 
 # Initialize session state variables
-if 'start_time' not in st.session_state:
+if 'tart_time' not in st.session_state:
     st.session_state.start_time = None
 if 'current_question' not in st.session_state:
     st.session_state.current_question = 0
-if 'student_responses' not in st.session_state:
+if 'tudent_responses' not in st.session_state:
     st.session_state.student_responses = {}
-if 'submitted' not in st.session_state:
+if 'ubmitted' not in st.session_state:
     st.session_state.submitted = False
 
 # Load existing student data to check for duplicates
@@ -122,14 +122,13 @@ elif student_name and student_email:
                         if st.session_state.student_responses.get(i) == q["answer"]:
                             correct_answers += 1
 
-                    # Save student details and score
+                    # Savestudent details and score
                     save_results(student_name, student_email, correct_answers)
 
                     # Display results
                     st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
 
                     # Feedback message
-                   # Feedback message
                     if correct_answers == total_questions:
                         st.success("Excellent! You got all questions right!")
                     elif correct_answers >= total_questions / 2:
