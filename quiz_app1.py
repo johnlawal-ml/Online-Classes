@@ -61,6 +61,9 @@ st.sidebar.title("Student Details")
 student_name = st.sidebar.text_input("Name")
 student_email = st.sidebar.text_input("Email")
 
+# Admin email with multiple access privilege
+admin_emails = ["jolawal8@gmail.com"]  # Add more admins as needed
+
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
@@ -74,7 +77,7 @@ if 'submitted' not in st.session_state:
 # Load existing student data to check for duplicates
 existing_data = load_existing_data()
 
-if student_email in existing_data["Email"].values:
+if student_email in existing_data["Email"].values and student_email not in admin_emails:
     st.sidebar.warning("You have already submitted your answers. Thank you!")
 elif student_name and student_email:
     if st.session_state.start_time is None:
