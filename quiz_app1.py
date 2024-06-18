@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import time
 
-# Define the questions and choices
+# Define the questions and choices (using a reduced set of questions for clarity)
 questions = [
     {
         "question": "Which of the following is the correct formula to add cells A1 and B1 in Excel?",
@@ -59,13 +59,13 @@ student_email = st.sidebar.text_input("Email")
 admin_emails = []  # Empty list means no admin access
 
 # Initialize session state variables
-if 'tart_time' not in st.session_state:
+if 'start_time' not in st.session_state:
     st.session_state.start_time = None
 if 'current_question' not in st.session_state:
     st.session_state.current_question = 0
-if 'tudent_responses' not in st.session_state:
+if 'student_responses' not in st.session_state:
     st.session_state.student_responses = {}
-if 'ubmitted' not in st.session_state:
+if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
 # Load existing student data to check for duplicates
@@ -77,22 +77,20 @@ elif student_name and student_email:
     if st.session_state.start_time is None:
         st.session_state.start_time = time.time()
 
-    while True:
-        elapsed_time = time.time() - st.session_state.start_time
-        remaining_time = total_time - elapsed_time
+    elapsed_time = time.time() - st.session_state.start_time
+    remaining_time = total_time - elapsed_time
 
-        if remaining_time <= 0:
-            st.session_state.submitted = True
-            remaining_time = 0
-        else:
-            # Display the countdown timer
-            st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**", unsafe_allow_html=True)
+    if remaining_time <= 0:
+        st.session_state.submitted = True
+        remaining_time = 0
+    else:
+        # Display the countdown timer
+        st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**")
 
         # Display current question and options
         current_question = st.session_state.current_question
         question = questions[current_question]
         st.markdown(f"**Question {current_question + 1}:** {question['question']}")
-
         st.session_state.student_responses[current_question] = st.radio(
             f"Select your answer for Question {current_question + 1}:", question["options"], key=current_question
         )
@@ -122,7 +120,7 @@ elif student_name and student_email:
                         if st.session_state.student_responses.get(i) == q["answer"]:
                             correct_answers += 1
 
-                    # Savestudent details and score
+                    # Save student details and score
                     save_results(student_name, student_email, correct_answers)
 
                     # Display results
@@ -140,8 +138,6 @@ elif student_name and student_email:
 
                     # End the quiz
                     st.error("Time's up! Your quiz has been automatically submitted.")
-
-        time.sleep(1)  # Wait for 1 second before updating the timer again
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
