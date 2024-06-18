@@ -3,11 +3,11 @@ import pandas as pd
 import os
 import time
 
-# Define the questions and choices
+# Define the questions and choices (using a reduced set of questions for clarity)
 questions = [
     {
         "question": "Which of the following is the correct formula to add cells A1 and B1 in Excel?",
-        "options": ["=A1+B1", "=SUM(A1/:/B1)", "=ADD(A1, B1)", "=A1-B1"],
+        "options": ["=A1+B1", "=SUM(A1:B1)", "=ADD(A1, B1)", "=A1-B1"],
         "answer": "=A1+B1"
     },
     {
@@ -53,27 +53,8 @@ def format_time(seconds):
 # Display the logo at the top
 st.image("logo.png", width=100)  # Adjust width as needed
 
-# Title of the quiz with timer on the right
-st.markdown(
-    """
-    <style>
-        #timer {
-            font-size: 24px;
-            background-color: white;
-            padding: 10px;
-            border: 1px solid black;
-            border-radius: 10px;
-            position: absolute;
-            right: 20px;
-        }
-    </style>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>Class Quiz</h1>
-        <div id="timer">Time remaining: </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Title of the quiz
+st.title("Class Quiz")
 
 # Sidebar for student details
 st.sidebar.title("Student Details")
@@ -98,6 +79,7 @@ if student_email in existing_data["Email"].values:
 elif student_name and student_email:
     if st.session_state.start_time is None:
         st.session_state.start_time = time.time()
+
     elapsed_time = time.time() - st.session_state.start_time
     remaining_time = total_time - elapsed_time
 
@@ -106,78 +88,69 @@ elif student_name and student_email:
         remaining_time = 0
     else:
         # Display the countdown timer
-        st.markdown(
-            f"""
-            <script>
-                function updateTimer() {{
-                    var timerElement = document.getElementById("timer");
-                    var remainingTime = {remaining_time};
-                    var timerInterval = setInterval(function() {{
-                        var minutes = Math.floor(remainingTime / 60);
-                        var seconds = remainingTime % 60;
-                        timerElement.innerHTML = "Time remaining: " + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                        remainingTime--;
-                        if (remainingTime < 0) {{
-                            clearInterval(timerInterval);
-                            window.location.reload();  // Reload page after time is up
-                        }}
-                    }}, 1000);
-                }}
-                updateTimer();
-            </script>
-            """,
-            unsafe_allow_html=True
+        timer_placeholder = st.empty()
+
+        while remaining_time > 0 and not st.session_state.submitted:
+            minutes = remaining_time // 60
+            seconds = remaining_time % 60
+            timer_placeholder.markdown(f"Time remaining: **{int(minutes)}:{int(seconds):02d}**")
+            time.sleep(1)
+            remaining_time -= 1
+
+        if not st.session_state.submitted:
+            st.session_state.submitted = True
+            st.error("Time's up! Your quiz has been automatically submitted.")
+
+    if not st.session_state.submitted:
+        # Display the current question
+        current_question = st.session_state.current_question
+        question = questions[current_question]
+        st.markdown(f"**Question {current_question + 1}:** {question['question']}")
+        st.session_state.student_responses[current_question] = st.radio(
+            "Select your answer:", question["options"], key=current_question
         )
 
-    # Display the current question
-    current_question = st.session_state.current_question
-    question = questions[current_question]
-    st.markdown(f"**Question {current_question + 1}:** {question['question']}")
-    st.session_state.student_responses[current_question] = st.radio(
-        "Select your answer:", question["options"], key=current_question
-    )
+        # Navigation buttons
+        col1, col2, col3 = st.columns([1, 1, 1])
 
-    # Navigation buttons
-    col1, col2, col3 = st.columns([1, 1, 1])
+        if current_question > 0:
+            if col1.button("Previous"):
+                st.session_state.current_question -= 1
 
-    if current_question > 0:
-        if col1.button("Previous"):
-            st.session_state.current_question -= 1
-
-    if current_question < len(questions) - 1:
-        if col3.button("Next"):
-            st.session_state.current_question += 1
-    else:
-        if col3.button("Submit"):
-            submit_quiz = True
-
-    # Submit quiz
-    if 'submit_quiz' in locals():
-        if not student_name or not student_email:
-            st.error("Please fill in both your name and email.")
+        if current_question < len(questions) - 1:
+            if col3.button("Next"):
+                st.session_state.current_question += 1
         else:
-            correct_answers = 0
-            total_questions = len(questions)
+            if col3.button("Submit"):
+                submit_quiz = True
 
-            for i, q in enumerate(questions):
-                if st.session_state.student_responses.get(i) == q["answer"]:
-                    correct_answers += 1
-
-            # Save student details and score
-            save_results(student_name, student_email, correct_answers)
-
-            # Display results
-            st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
-
-            # Feedback message
-            if correct_answers == total_questions:
-                st.success("Excellent! You got all questions right!")
-            elif correct_answers >= total_questions / 2:
-                st.info("Good job! You got more than half of the questions right.")
+        # Submit quiz
+        if 'submit_quiz' in locals():
+            if not student_name or not student_email:
+                st.error("Please fill in both your name and email.")
             else:
-                st.warning("You need more practice. Better luck next time!")
+                correct_answers = 0
+                total_questions = len(questions)
 
-            st.sidebar.success("Details submitted successfully!")
+                for i, q in enumerate(questions):
+                    if st.session_state.student_responses.get(i) == q["answer"]:
+                        correct_answers += 1
+
+                # Save student details and score
+                save_results(student_name, student_email, correct_answers)
+
+                # Display results
+                st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
+
+                # Feedback message
+                if correct_answers == total_questions:
+                    st.success("Excellent! You got all questions right!")
+                elif correct_answers >= total_questions / 2:
+                    st.info("Good job! You got more than half of the questions right.")
+                else:
+                    st.warning("You need more practice. Better luck next time!")
+
+                st.sidebar.success("Details submitted successfully!")
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
