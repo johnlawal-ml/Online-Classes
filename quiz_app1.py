@@ -129,12 +129,13 @@ elif student_name and student_email:
                     st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
 
                     # Feedback message
+                   # Feedback message
                     if correct_answers == total_questions:
                         st.success("Excellent! You got all questions right!")
                     elif correct_answers >= total_questions / 2:
                         st.info("Good job! You got more than half of the questions right.")
                     else:
-st.warning("You need more practice. Better luck next time!")
+                        st.warning("You need more practice. Better luck next time!")
 
                     st.sidebar.success("Details submitted successfully!")
 
