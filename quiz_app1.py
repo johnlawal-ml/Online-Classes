@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import time
 
 # Define the questions and choices (using a reduced set of questions for clarity)
 questions = [
@@ -53,46 +54,67 @@ st.title("Class Quiz")
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = time.time()
+
+if 'student_responses' not in st.session_state:
+    st.session_state.student_responses = {}
+
+if 'current_question' not in st.session_state:
+    st.session_state.current_question = 0
+
 # Sidebar for student details
 st.sidebar.title("Student Details")
 student_name = st.sidebar.text_input("Name")
 student_email = st.sidebar.text_input("Email")
 
-# Remove admin access for jolawal8@gmail.com
-admin_emails = []  # Empty list means no admin access
-
 # Load existing student data to check for duplicates
 existing_data = load_existing_data()
 
-if student_email in existing_data["Email"].values and student_email not in admin_emails:
+if student_email in existing_data["Email"].values:
     st.sidebar.warning("You have already submitted your answers. Thank you!")
 elif student_name and student_email:
     if not st.session_state.submitted:
+        # Calculate the remaining time
+        remaining_time = total_time - (time.time() - st.session_state.start_time)
+        
+        if remaining_time < 0:
+            remaining_time = 0
+        
         # Display the countdown timer using JavaScript
-        st.markdown("""
-        <div id="timer" style="font-size: 20px;"></div>
+        st.markdown(f"""
         <script>
-        var totalSeconds = %d;
-        function countdown() {
-            var minutes = Math.floor(totalSeconds / 60);
-            var seconds = totalSeconds % 60;
-            document.getElementById("timer").innerHTML = "Time remaining: " + minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
-            if (totalSeconds <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById("timer").innerHTML = "Time's up!";
-                document.getElementById("submit-button").click(); // Automatically submit when time is up
-            } else {
-                totalSeconds--;
-            }
-        }
-        var timerInterval = setInterval(countdown, 1000);
-        </script>
-        """ % total_time, unsafe_allow_html=True)
+        function startTimer(duration, display) {{
+            var timer = duration, minutes, seconds;
+            setInterval(function () {{
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
 
-        # Display all questions and options
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = "Time remaining: " + minutes + ":" + seconds;
+
+                if (--timer < 0) {{
+                    timer = 0;
+                    document.getElementById("submit-button").click(); // Automatically submit when time is up
+                }}
+            }}, 1000);
+        }}
+
+        window.onload = function () {{
+            var totalSeconds = {int(remaining_time)},
+                display = document.querySelector('#time');
+            startTimer(totalSeconds, display);
+        }};
+        </script>
+        <div id="time" style="font-size: 20px;"></div>
+        """, unsafe_allow_html=True)
+        
+        # Display all questions on a single page
         for i, question in enumerate(questions):
             st.markdown(f"**Question {i + 1}:** {question['question']}")
-            st.session_state[f"response_{i}"] = st.radio(
+            st.session_state.student_responses[i] = st.radio(
                 f"Select your answer for Question {i + 1}:", question["options"], key=i
             )
             st.write("")  # Add space between questions
@@ -109,7 +131,7 @@ elif student_name and student_email:
                 total_questions = len(questions)
 
                 for i, q in enumerate(questions):
-                    if st.session_state[f"response_{i}"] == q["answer"]:
+                    if st.session_state.student_responses[i] == q["answer"]:
                         correct_answers += 1
 
                 # Save student details and score
