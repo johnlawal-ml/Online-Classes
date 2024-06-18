@@ -61,8 +61,8 @@ admin_emails = []  # Empty list means no admin access
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
-if 'student_responses' not in st.session_state:
-    st.session_state.student_responses = {}
+if 'remaining_time' not in st.session_state:
+    st.session_state.remaining_time = total_time
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
@@ -76,14 +76,14 @@ elif student_name and student_email:
         st.session_state.start_time = time.time()
 
     elapsed_time = time.time() - st.session_state.start_time
-    remaining_time = total_time - elapsed_time
+    st.session_state.remaining_time = total_time - elapsed_time
 
-    if remaining_time <= 0:
+    if st.session_state.remaining_time <= 0:
         st.session_state.submitted = True
-        remaining_time = 0
+        st.session_state.remaining_time = 0
     else:
-        # Display the countdown timer
-        st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**")
+        # Display the countdown timer dynamically
+        st.sidebar.markdown(f"Time remaining: **{int(st.session_state.remaining_time // 60)}:{int(st.session_state.remaining_time % 60):02d}**")
 
         # Display all questions and options
         for i, question in enumerate(questions):
