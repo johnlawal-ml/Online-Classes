@@ -97,60 +97,56 @@ elif student_name and student_email:
             time.sleep(1)
             remaining_time -= 1
 
-        if not st.session_state.submitted:
-            st.session_state.submitted = True
-            st.error("Time's up! Your quiz has been automatically submitted.")
+            # Display the current question
+            if not st.session_state.submitted:
+                current_question = st.session_state.current_question
+                question = questions[current_question]
+                st.markdown(f"**Question {current_question + 1}:** {question['question']}")
+                st.session_state.student_responses[current_question] = st.radio(
+                    "Select your answer:", question["options"], key=current_question
+                )
 
-    if not st.session_state.submitted:
-        # Display the current question
-        current_question = st.session_state.current_question
-        question = questions[current_question]
-        st.markdown(f"**Question {current_question + 1}:** {question['question']}")
-        st.session_state.student_responses[current_question] = st.radio(
-            "Select your answer:", question["options"], key=current_question
-        )
+                # Navigation buttons
+                col1, col2, col3 = st.columns([1, 1, 1])
 
-        # Navigation buttons
-        col1, col2, col3 = st.columns([1, 1, 1])
+                if current_question > 0:
+                    if col1.button("Previous"):
+                        st.session_state.current_question -= 1
 
-        if current_question > 0:
-            if col1.button("Previous"):
-                st.session_state.current_question -= 1
-
-        if current_question < len(questions) - 1:
-            if col3.button("Next"):
-                st.session_state.current_question += 1
-        else:
-            if col3.button("Submit"):
-                submit_quiz = True
-
-        # Submit quiz
-        if 'submit_quiz' in locals():
-            if not student_name or not student_email:
-                st.error("Please fill in both your name and email.")
-            else:
-                correct_answers = 0
-                total_questions = len(questions)
-
-                for i, q in enumerate(questions):
-                    if st.session_state.student_responses.get(i) == q["answer"]:
-                        correct_answers += 1
-
-                # Save student details and score
-                save_results(student_name, student_email, correct_answers)
-
-                # Display results
-                st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
-
-                # Feedback message
-                if correct_answers == total_questions:
-                    st.success("Excellent! You got all questions right!")
-                elif correct_answers >= total_questions / 2:
-                    st.info("Good job! You got more than half of the questions right.")
+                if current_question < len(questions) - 1:
+                    if col3.button("Next"):
+                        st.session_state.current_question += 1
                 else:
-                    st.warning("You need more practice. Better luck next time!")
+                    if col3.button("Submit"):
+                        submit_quiz = True
 
-                st.sidebar.success("Details submitted successfully!")
+                # Submit quiz
+                if 'submit_quiz' in locals():
+                    if not student_name or not student_email:
+                        st.error("Please fill in both your name and email.")
+                    else:
+                        correct_answers = 0
+                        total_questions = len(questions)
+
+                        for i, q in enumerate(questions):
+                            if st.session_state.student_responses.get(i) == q["answer"]:
+                                correct_answers += 1
+
+                        # Save student details and score
+                        save_results(student_name, student_email, correct_answers)
+
+                        # Display results
+                        st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
+
+                        # Feedback message
+                        if correct_answers == total_questions:
+                            st.success("Excellent! You got all questions right!")
+                        elif correct_answers >= total_questions / 2:
+                            st.info("Good job! You got more than half of the questions right.")
+                        else:
+                            st.warning("You need more practice. Better luck next time!")
+
+                        st.sidebar.success("Details submitted successfully!")
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
