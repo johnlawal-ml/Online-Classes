@@ -64,4 +64,82 @@ else:
         },
         {
             "question": "Who wrote 'To Kill a Mockingbird'?",
-            "options": ["Harpe
+            "options": ["Harper Lee", "J.K. Rowling", "Mark Twain", "Ernest Hemingway"],
+            "answer": "Harper Lee"
+        }
+    ]
+
+    # Timer
+    elapsed_time = time.time() - st.session_state.start_time
+    remaining_time = total_time - elapsed_time
+
+    if remaining_time <= 0:
+        st.warning("Time is up! Submitting your answers...")
+        submit_quiz = True
+    else:
+        st.sidebar.write(f"Time remaining: {int(remaining_time // 60)} minutes {int(remaining_time % 60)} seconds")
+        submit_quiz = False
+
+    # Display the current question
+    current_question = st.session_state.current_question
+    question = questions[current_question]
+
+    st.write(f"**Question {current_question + 1}:** {question['question']}")
+    st.session_state.student_responses[current_question] = st.radio(
+        "Select your answer:", question["options"], key=current_question
+    )
+
+    # Navigation buttons
+    col1, col2, col3 = st.columns([1, 1, 1])
+
+    if current_question > 0:
+        if col1.button("Previous"):
+            st.session_state.current_question -= 1
+
+    if current_question < len(questions) - 1:
+        if col3.button("Next"):
+            st.session_state.current_question += 1
+    else:
+        submit_quiz = col3.button("Submit")
+
+    # Submit quiz
+    if submit_quiz:
+        if not student_name or not student_id:
+            st.error("Please fill in both your name and student ID.")
+        else:
+            correct_answers = 0
+            total_questions = len(questions)
+
+            for i, q in enumerate(questions):
+                if st.session_state.student_responses.get(i) == q["answer"]:
+                    correct_answers += 1
+
+            # Save student details and score
+            save_results(student_name, student_id, correct_answers)
+
+            # Display results
+            st.write(f"You answered {correct_answers} out of {total_questions} questions correctly.")
+
+            # Feedback message
+            if correct_answers == total_questions:
+                st.success("Excellent! You got all questions right!")
+            elif correct_answers >= total_questions / 2:
+                st.info("Good job! You got more than half of the questions right.")
+            else:
+                st.warning("You need more practice. Better luck next time!")
+
+            st.sidebar.success("Details submitted successfully!")
+
+# Admin section to download results
+st.sidebar.title("Admin Section")
+if st.sidebar.checkbox('Show download link for results'):
+    if os.path.exists(results_file):
+        with open(results_file, 'rb') as f:
+            st.sidebar.download_button(
+                label='Download Results',
+                data=f,
+                file_name=results_file,
+                mime='text/csv'
+            )
+    else:
+        st.sidebar.write("No results available yet.")
