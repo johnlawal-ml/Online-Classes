@@ -93,16 +93,6 @@ elif student_name and student_email:
         # Display the countdown timer
         st.sidebar.markdown(f"Time remaining: **{format_time(remaining_time)}**")
 
-        while remaining_time > 0 and not st.session_state.submitted:
-            time.sleep(1)
-            elapsed_time = time.time() - st.session_state.start_time
-            remaining_time = total_time - elapsed_time
-            st.sidebar.markdown(f"Time remaining: **{format_time(remaining_time)}**")
-
-        if remaining_time <= 0:
-            st.session_state.submitted = True
-            remaining_time = 0
-
         # Display the current question
         current_question = st.session_state.current_question
         question = questions[current_question]
