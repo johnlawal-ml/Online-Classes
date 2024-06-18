@@ -148,10 +148,11 @@ elif student_name and student_email:
         if col3.button("Next"):
             st.session_state.current_question += 1
     else:
-        submit_quiz = col3.button("Submit")
+        if col3.button("Submit"):
+            submit_quiz = True
 
     # Submit quiz
-    if submit_quiz:
+    if 'submit_quiz' in locals():
         if not student_name or not student_email:
             st.error("Please fill in both your name and email.")
         else:
