@@ -50,14 +50,6 @@ st.image("logo.png", width=100)  # Adjust width as needed
 # Title of the quiz
 st.title("Class Quiz")
 
-# Sidebar for student details
-st.sidebar.title("Student Details")
-student_name = st.sidebar.text_input("Name")
-student_email = st.sidebar.text_input("Email")
-
-# Remove admin access for jolawal8@gmail.com
-admin_emails = []  # Empty list means no admin access
-
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
@@ -65,6 +57,16 @@ if 'remaining_time' not in st.session_state:
     st.session_state.remaining_time = total_time
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
+if 'student_responses' not in st.session_state:
+    st.session_state.student_responses = {}
+
+# Sidebar for student details
+st.sidebar.title("Student Details")
+student_name = st.sidebar.text_input("Name")
+student_email = st.sidebar.text_input("Email")
+
+# Remove admin access for jolawal8@gmail.com
+admin_emails = []  # Empty list means no admin access
 
 # Load existing student data to check for duplicates
 existing_data = load_existing_data()
