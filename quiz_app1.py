@@ -7,7 +7,7 @@ import time
 questions = [
     {
         "question": "Which of the following is the correct formula to add cells A1 and B1 in Excel?",
-        "options": ["=A1+B1", "=SUM(A1 /:/ B1)", "=ADD(A1, B1)", "=A1-B1"],
+        "options": ["=A1+B1", "=SUM(A1:B1)", "=ADD(A1, B1)", "=A1-B1"],
         "answer": "=A1+B1"
     },
     {
@@ -61,8 +61,6 @@ admin_emails = []  # Empty list means no admin access
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
-if 'current_question' not in st.session_state:
-    st.session_state.current_question = 0
 if 'student_responses' not in st.session_state:
     st.session_state.student_responses = {}
 if 'submitted' not in st.session_state:
@@ -102,30 +100,15 @@ elif student_name and student_email:
             # Ensure the final timer display shows 00:00
             timer_placeholder.markdown(f"Time remaining: **00:00**")
 
-        # Display the current question
-        current_question = st.session_state.current_question
-        question = questions[current_question]
-        st.markdown(f"**Question {current_question + 1}:** {question['question']}")
-        st.session_state.student_responses[current_question] = st.radio(
-            "Select your answer:", question["options"], key=current_question
-        )
-
-        # Navigation buttons
-        col1, col2, col3 = st.columns([1, 1, 1])
-
-        if current_question > 0:
-            if col1.button("Previous"):
-                st.session_state.current_question -= 1
-
-        if current_question < len(questions) - 1:
-            if col3.button("Next"):
-                st.session_state.current_question += 1
-        else:
-            if col3.button("Submit"):
-                submit_quiz = True
+        # Display all questions
+        for i, question in enumerate(questions):
+            st.markdown(f"**Question {i + 1}:** {question['question']}")
+            st.session_state.student_responses[i] = st.radio(
+                f"Select your answer for Question {i + 1}:", question["options"], key=i
+            )
 
         # Submit quiz
-        if 'submit_quiz' in locals():
+        if st.session_state.submitted:
             if not student_name or not student_email:
                 st.error("Please fill in both your name and email.")
             else:
@@ -151,9 +134,6 @@ elif student_name and student_email:
                     st.warning("You need more practice. Better luck next time!")
 
                 st.sidebar.success("Details submitted successfully!")
-
-                # Set submitted state
-                st.session_state.submitted = True
 
                 # End the quiz
                 st.error("Time's up! Your quiz has been automatically submitted.")
