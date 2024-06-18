@@ -44,19 +44,13 @@ def load_existing_data():
     else:
         return pd.DataFrame(columns=["Name", "Email", "Score"])
 
-# Function to format time
-def format_time(seconds):
-    minutes = seconds // 60
-    seconds = seconds % 60
-    return f"{int(minutes)}:{int(seconds):02d}"
-
 # Display the logo at the top
 st.image("logo.png", width=100)  # Adjust width as needed
 
 # Title of the quiz
 st.title("Class Quiz")
 
-# Sidebar for student details and timer
+# Sidebar for student details
 st.sidebar.title("Student Details")
 student_name = st.sidebar.text_input("Name")
 student_email = st.sidebar.text_input("Email")
@@ -91,7 +85,7 @@ elif student_name and student_email:
         remaining_time = 0
     else:
         # Display the countdown timer
-        st.sidebar.markdown(f"Time remaining: **{format_time(remaining_time)}**")
+        st.sidebar.markdown(f"Time remaining: **{int(remaining_time // 60)}:{int(remaining_time % 60):02d}**")
 
         # Display the current question
         current_question = st.session_state.current_question
@@ -142,6 +136,12 @@ elif student_name and student_email:
                     st.warning("You need more practice. Better luck next time!")
 
                 st.sidebar.success("Details submitted successfully!")
+
+                # Set submitted state
+                st.session_state.submitted = True
+
+                # End the quiz
+                st.error("Time's up! Your quiz has been automatically submitted.")
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
