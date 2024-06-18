@@ -56,7 +56,7 @@ st.image("logo.png", width=100)  # Adjust width as needed
 # Title of the quiz
 st.title("Class Quiz")
 
-# Sidebar for student details
+# Sidebar for student details and timer
 st.sidebar.title("Student Details")
 student_name = st.sidebar.text_input("Name")
 student_email = st.sidebar.text_input("Email")
@@ -92,6 +92,16 @@ elif student_name and student_email:
     else:
         # Display the countdown timer
         st.sidebar.markdown(f"Time remaining: **{format_time(remaining_time)}**")
+
+        while remaining_time > 0 and not st.session_state.submitted:
+            time.sleep(1)
+            elapsed_time = time.time() - st.session_state.start_time
+            remaining_time = total_time - elapsed_time
+            st.sidebar.markdown(f"Time remaining: **{format_time(remaining_time)}**")
+
+        if remaining_time <= 0:
+            st.session_state.submitted = True
+            remaining_time = 0
 
         # Display the current question
         current_question = st.session_state.current_question
