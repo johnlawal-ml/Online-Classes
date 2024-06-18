@@ -61,6 +61,8 @@ admin_emails = []  # Empty list means no admin access
 # Initialize session state variables
 if 'start_time' not in st.session_state:
     st.session_state.start_time = None
+if 'student_responses' not in st.session_state:
+    st.session_state.student_responses = {}
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
