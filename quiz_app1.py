@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import time
 
 # Define the questions and choices (using a reduced set of questions for clarity)
 questions = [
@@ -51,14 +50,8 @@ st.image("logo.png", width=100)  # Adjust width as needed
 st.title("Class Quiz")
 
 # Initialize session state variables
-if 'start_time' not in st.session_state:
-    st.session_state.start_time = None
-if 'remaining_time' not in st.session_state:
-    st.session_state.remaining_time = total_time
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
-if 'student_responses' not in st.session_state:
-    st.session_state.student_responses = {}
 
 # Sidebar for student details
 st.sidebar.title("Student Details")
@@ -74,29 +67,38 @@ existing_data = load_existing_data()
 if student_email in existing_data["Email"].values and student_email not in admin_emails:
     st.sidebar.warning("You have already submitted your answers. Thank you!")
 elif student_name and student_email:
-    if st.session_state.start_time is None:
-        st.session_state.start_time = time.time()
-
-    elapsed_time = time.time() - st.session_state.start_time
-    st.session_state.remaining_time = total_time - elapsed_time
-
-    if st.session_state.remaining_time <= 0:
-        st.session_state.submitted = True
-        st.session_state.remaining_time = 0
-    else:
-        # Display the countdown timer dynamically
-        st.sidebar.markdown(f"Time remaining: **{int(st.session_state.remaining_time // 60)}:{int(st.session_state.remaining_time % 60):02d}**")
+    if not st.session_state.submitted:
+        # Display the countdown timer using JavaScript
+        st.markdown("""
+        <div id="timer" style="font-size: 20px;"></div>
+        <script>
+        var totalSeconds = %d;
+        function countdown() {
+            var minutes = Math.floor(totalSeconds / 60);
+            var seconds = totalSeconds % 60;
+            document.getElementById("timer").innerHTML = "Time remaining: " + minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById("timer").innerHTML = "Time's up!";
+                document.getElementById("submit-button").click(); // Automatically submit when time is up
+            } else {
+                totalSeconds--;
+            }
+        }
+        var timerInterval = setInterval(countdown, 1000);
+        </script>
+        """ % total_time, unsafe_allow_html=True)
 
         # Display all questions and options
         for i, question in enumerate(questions):
             st.markdown(f"**Question {i + 1}:** {question['question']}")
-            st.session_state.student_responses[i] = st.radio(
+            st.session_state[f"response_{i}"] = st.radio(
                 f"Select your answer for Question {i + 1}:", question["options"], key=i
             )
             st.write("")  # Add space between questions
 
         # Submit button
-        if st.button("Submit"):
+        if st.button("Submit", key="submit-button"):
             st.session_state.submitted = True
 
             # Submit quiz
@@ -107,7 +109,7 @@ elif student_name and student_email:
                 total_questions = len(questions)
 
                 for i, q in enumerate(questions):
-                    if st.session_state.student_responses.get(i) == q["answer"]:
+                    if st.session_state[f"response_{i}"] == q["answer"]:
                         correct_answers += 1
 
                 # Save student details and score
@@ -126,8 +128,8 @@ elif student_name and student_email:
 
                 st.sidebar.success("Details submitted successfully!")
 
-                # End the quiz
-                st.error("Time's up! Your quiz has been automatically submitted.")
+else:
+    st.sidebar.warning("Please enter your name and email to start the quiz.")
 
 # Admin section to download results
 st.sidebar.title("Admin Section")
